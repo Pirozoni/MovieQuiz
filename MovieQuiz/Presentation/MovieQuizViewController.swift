@@ -1,11 +1,33 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController {
-    // MARK: - Lifecycle
+final class MovieQuizViewController:
+    UIViewController {
+    
+    // MARK: - IB Outlets
+    
+    @IBOutlet weak var yesButton: UIButton!
+    
+    // MARK: - Public Properties
+
+    // MARK: - Private Properties
+
+    // MARK: - Initializers
+
+    // MARK: - Overrides Methods
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+//        yesButton.layer.cornerRadius = 35
+//        yesButton.titleLabel?.font = UIFont(name: "YSDisplay-Medium", size: 10)
+//        yesButton.backgroundColor = .yellow
     }
 }
+    // MARK: - IB Actions
+
+    // MARK: - Public Methods
+
+    // MARK: - Private Methods
+  
 
 /*
  Mock-данные
