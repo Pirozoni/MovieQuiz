@@ -1,11 +1,22 @@
 import UIKit
 
+struct QuizStepViewModel {
+    let image: UIImage
+    let question: String
+    let questionNumber: String
+}
+
+struct QuizResultViewModel {
+    let title: String
+    let text: String
+    let buttonText: String
+}
+let resultAnswer: Bool
+
 final class MovieQuizViewController:
     UIViewController {
     
     // MARK: - IB Outlets
-    
-    @IBOutlet weak var yesButton: UIButton!
     
     // MARK: - Public Properties
 
