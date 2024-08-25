@@ -87,6 +87,7 @@ final class MovieQuizViewController:
         super.viewDidLoad()
         imageView.backgroundColor = .ypWhite
         imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
+        show(quiz: convert(model: questions[currentQuestionIndex]))
     }
     
     // MARK: - IB Actions
@@ -94,12 +95,16 @@ final class MovieQuizViewController:
         let currentQuestion = questions[currentQuestionIndex]
         let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        
+        availableButtons(status: false)
     }
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
         let currentQuestion = questions[currentQuestionIndex]
         let givenAnswer = true
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        
+        availableButtons(status: false)
     }
     
     // MARK: - Public Methods
@@ -118,6 +123,28 @@ final class MovieQuizViewController:
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
     }
+    
+    private func show(quiz result: QuizResultViewModel) {
+        let alert = UIAlertController(
+            title: result.title,
+            message: result.text,
+            preferredStyle: .alert)
+
+        let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            
+            // заново показываем первый вопрос
+            let firstQuestion = self.questions[self.currentQuestionIndex]
+            let viewModel = self.convert(model: firstQuestion)
+            self.show(quiz: viewModel)
+        }
+
+        alert.addAction(action)
+
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     // приватный метод, который меняет цвет рамки
     // принимает на вход булевое значение и ничего не возвращает
     private func showAnswerResult(isCorrect: Bool) {
@@ -150,27 +177,13 @@ final class MovieQuizViewController:
             let viewModel = convert(model: nextQuestion)
             
             show(quiz: viewModel)
-    }
-}
-    private func show(quiz result: QuizResultViewModel) {
-        let alert = UIAlertController(
-            title: result.title,
-            message: result.text,
-            preferredStyle: .alert)
-
-        let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
-            self.currentQuestionIndex = 0
-            self.correctAnswers = 0
-            
-            // заново показываем первый вопрос
-            let firstQuestion = self.questions[self.currentQuestionIndex]
-            let viewModel = self.convert(model: firstQuestion)
-            self.show(quiz: viewModel)
         }
-
-        alert.addAction(action)
-
-        self.present(alert, animated: true, completion: nil)
+        imageView.layer.borderColor = UIColor.ypBlack.cgColor
+        availableButtons(status: true)
+    }
+    private func availableButtons(status: Bool) {
+        yesButton.isEnabled = status
+        noButton.isEnabled = status
     }
 }
 /*
