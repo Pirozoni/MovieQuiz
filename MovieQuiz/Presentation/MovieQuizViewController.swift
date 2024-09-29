@@ -3,24 +3,6 @@ import UIKit
 final class MovieQuizViewController:
     UIViewController {
     
-    private struct QuizStepViewModel {
-        let image: UIImage
-        let question: String // вопрос о рейтинге квиза
-        let questionNumber: String // строка с порядковым номером этого вопроса (ex. "1/10")
-    }
-
-    private struct QuizResultViewModel {
-        let title: String
-        let text: String
-        let buttonText: String
-    }
-
-    private struct QuizQuestion {
-        let image: String
-        let text: String
-        let correctAnswer: Bool
-    }
-    
     // MARK: - IB Outlets
     
     @IBOutlet private var imageView: UIImageView!
@@ -32,52 +14,10 @@ final class MovieQuizViewController:
     
     // MARK: - Private Properties
     
-    private let questions: [QuizQuestion] = [
-        QuizQuestion(
-            image: "The Godfather",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true),
-        QuizQuestion(
-            image: "The Dark Knight",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true),
-        QuizQuestion(
-            image: "Kill Bill",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true),
-        QuizQuestion(
-            image: "The Avengers",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true),
-        QuizQuestion(
-            image: "Deadpool",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true),
-        QuizQuestion(
-            image: "The Green Knight",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true),
-        QuizQuestion(
-            image: "Old",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: false),
-        QuizQuestion(
-            image: "The Ice Age Adventures of Buck Wild",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: false),
-        QuizQuestion(
-            image: "Tesla",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: false),
-        QuizQuestion(
-            image: "Vivarium",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: false)
-    ]
-    
-    // переменная с индексом текущего вопроса, начальное значение 0
     private var currentQuestionIndex = 0
-    // переменная со счётчиком правильных ответов, начальное значение закономерно 0
+    private let questionsAmount = 10
+    private var questionFactory: QuestionFactory = QuestionFactory()
+    private var currentQuestion: QuizQuestion?
     private var correctAnswers = 0
     
     // MARK: - Overrides Methods
@@ -85,9 +25,9 @@ final class MovieQuizViewController:
     override func viewDidLoad() {
         super.viewDidLoad()
         guard let currentQuizQuestion = questions[safe: currentQuestionIndex] else { return }
-        imageView.backgroundColor = .ypWhite
-        imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
         show(quiz: convert(model: currentQuizQuestion))
+        imageView.backgroundColor = .ypWhite
+        imageView.layer.cornerRadius = 20
     }
     
     // MARK: - IB Actions
@@ -102,7 +42,6 @@ final class MovieQuizViewController:
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
         guard let currentQuestion = questions[safe: currentQuestionIndex] else { return }
-//        let currentQuestion = questions[currentQuestionIndex]
         let givenAnswer = true
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
         
@@ -132,7 +71,8 @@ final class MovieQuizViewController:
             message: result.text,
             preferredStyle: .alert)
 
-        let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
+        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+            guard let self = self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
@@ -149,7 +89,7 @@ final class MovieQuizViewController:
     
     // изменение цвета рамки
     private func showAnswerResult(isCorrect: Bool) {
-        if isCorrect {
+        if isCorrect  {
             correctAnswers += 1
         }
         
@@ -157,7 +97,8 @@ final class MovieQuizViewController:
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {  [weak self] in
+            guard let self = self else { return }
             self.showNextQuestionOrResults()
         }
     }
