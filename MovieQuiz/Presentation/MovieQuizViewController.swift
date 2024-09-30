@@ -24,8 +24,11 @@ final class MovieQuizViewController:
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        guard let currentQuizQuestion = questions[safe: currentQuestionIndex] else { return }
-        show(quiz: convert(model: currentQuizQuestion))
+        if let firstQuestion = questionFactory.requestNextQuestion() {
+            currentQuestion = firstQuestion
+            let viewModel = convert(model: firstQuestion)
+            self.show(quiz: viewModel)
+        }
         imageView.backgroundColor = .ypWhite
         imageView.layer.cornerRadius = 20
     }
@@ -33,18 +36,23 @@ final class MovieQuizViewController:
     // MARK: - IB Actions
     
     @IBAction private func noButtonClicked(_ sender: Any) {
-        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return }
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+    
+        //        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
         let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        
         availableButtons(status: false)
     }
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
-        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return }
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+//        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
         let givenAnswer = true
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        
         availableButtons(status: false)
     }
     
@@ -55,8 +63,9 @@ final class MovieQuizViewController:
         return QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
+
     // вывод на экран вопроса, который принимает на вход вью модель вопроса и ничего не возвращает
     private func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
@@ -76,10 +85,15 @@ final class MovieQuizViewController:
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
-            guard let firstQuestion = self.questions[safe: self.currentQuestionIndex] else { return }
-           
-            let viewModel = self.convert(model: firstQuestion)
-            self.show(quiz: viewModel)
+//            guard let firstQuestion = self.questions[safe: self.currentQuestionIndex] else { return }
+//            let viewModel = self.convert(model: firstQuestion)
+//            self.show(quiz: viewModel)
+            if let firstQuestion = self.questionFactory.requestNextQuestion() {
+                self.currentQuestion = firstQuestion
+                let viewModel = self.convert(model: firstQuestion)
+
+                self.show(quiz: viewModel)
+            }
         }
 
         alert.addAction(action)
@@ -104,7 +118,10 @@ final class MovieQuizViewController:
     }
     
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questions.count - 1 {
+        if currentQuestionIndex == questionsAmount - 1 {
+            let text = correctAnswers == questionsAmount ?
+                        "Поздравляем, вы ответили на 10 из 10!" :
+                        "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
             show(quiz: QuizResultViewModel(
                     title: "Раунд окончен",
                     text: "Ваш результат \(correctAnswers)/10",
@@ -113,7 +130,8 @@ final class MovieQuizViewController:
     // идём в состояние "Результат квиза"
         } else {
             currentQuestionIndex += 1
-            guard let nextQuestion = questions[safe: currentQuestionIndex] else { return }
+            guard let nextQuestion = questionFactory.requestNextQuestion() else { return }
+//            guard let nextQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
             let viewModel = convert(model: nextQuestion)
             
             show(quiz: viewModel)
@@ -179,5 +197,4 @@ final class MovieQuizViewController:
  Настоящий рейтинг: 5,8
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: НЕТ
- 
 */

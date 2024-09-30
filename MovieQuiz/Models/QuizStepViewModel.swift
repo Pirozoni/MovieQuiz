@@ -5,7 +5,7 @@
 //
 import UIKit
 
-private struct QuizStepViewModel {
+struct QuizStepViewModel {
     let image: UIImage
     let question: String // вопрос о рейтинге квиза
     let questionNumber: String // строка с порядковым номером этого вопроса (ex. "1/10")

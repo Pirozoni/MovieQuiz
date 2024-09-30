@@ -50,18 +50,18 @@ class QuestionFactory: QuestionFactoryProtocol {
             correctAnswer: false)
     ]
     func requestNextQuestion() -> QuizQuestion? {
-        guard let index = (0..<question.count).randomElement() else {
+        guard let index = (0..<questions.count).randomElement() else {
             return nil
         }
         return questions[safe: index]
     }
 }
-    subscript(index: Int) -> Int {
-        get {
-        // Возвращаем соответствующее значение
-    }
-        set(newValue) {
-            array[index]
-        // Устанавливаем подходящее значение
-    }
-}
+//    subscript(index: Int) -> Int {
+//        get {
+//        // Возвращаем соответствующее значение
+//    }
+//        set(newValue) {
+//            array[index]
+//        // Устанавливаем подходящее значение
+//    }
+//}
