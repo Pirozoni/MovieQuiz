@@ -1,7 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController:
-    UIViewController {
+final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - IB Outlets
     
@@ -16,7 +15,7 @@ final class MovieQuizViewController:
     
     private var currentQuestionIndex = 0
     private let questionsAmount = 10
-    private var questionFactory: QuestionFactory = QuestionFactory()
+    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var correctAnswers = 0
     
@@ -24,22 +23,34 @@ final class MovieQuizViewController:
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let firstQuestion = questionFactory.requestNextQuestion() {
-            currentQuestion = firstQuestion
-            let viewModel = convert(model: firstQuestion)
-            self.show(quiz: viewModel)
-        }
+        let questionFactory = QuestionFactory()
+        questionFactory.delegate = self
+        self.questionFactory = questionFactory
+        
+        questionFactory.requestNextQuestion()
+        
         imageView.backgroundColor = .ypWhite
         imageView.layer.cornerRadius = 20
     }
+    // MARK: - QuestionFactoryDelegate
     
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+        currentQuestion = question
+        let viewModel = convert(model: question)
+//        show(quiz: viewModel)
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: viewModel)
+        }
+    }
     // MARK: - IB Actions
     
     @IBAction private func noButtonClicked(_ sender: Any) {
         guard let currentQuestion = currentQuestion else {
             return
         }
-    
         //        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
         let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
@@ -84,16 +95,8 @@ final class MovieQuizViewController:
             guard let self = self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
-            
-//            guard let firstQuestion = self.questions[safe: self.currentQuestionIndex] else { return }
-//            let viewModel = self.convert(model: firstQuestion)
-//            self.show(quiz: viewModel)
-            if let firstQuestion = self.questionFactory.requestNextQuestion() {
-                self.currentQuestion = firstQuestion
-                let viewModel = self.convert(model: firstQuestion)
-
-                self.show(quiz: viewModel)
-            }
+         
+            self.questionFactory?.requestNextQuestion()
         }
 
         alert.addAction(action)
@@ -130,11 +133,7 @@ final class MovieQuizViewController:
     // идём в состояние "Результат квиза"
         } else {
             currentQuestionIndex += 1
-            guard let nextQuestion = questionFactory.requestNextQuestion() else { return }
-//            guard let nextQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
-            let viewModel = convert(model: nextQuestion)
-            
-            show(quiz: viewModel)
+            self.questionFactory?.requestNextQuestion()
         }
         imageView.layer.borderColor = UIColor.ypBlack.cgColor
         availableButtons(status: true)
