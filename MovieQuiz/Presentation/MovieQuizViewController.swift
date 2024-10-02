@@ -18,6 +18,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var correctAnswers = 0
+    private var alertPresenter: AlertPresenter?
     
     // MARK: - Overrides Methods
     
@@ -28,6 +29,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         self.questionFactory = questionFactory
         
         questionFactory.requestNextQuestion()
+        let alertPresenter = AlertPresenter(delegate: self)
+        self.alertPresenter = alertPresenter
         
         imageView.backgroundColor = .ypWhite
         imageView.layer.cornerRadius = 20
@@ -84,25 +87,24 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         counterLabel.text = step.questionNumber
     }
     
-    private func show(quiz result: QuizResultViewModel) {
-        
-        let alert = UIAlertController(
-            title: result.title,
-            message: result.text,
-            preferredStyle: .alert)
-
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            self.currentQuestionIndex = 0
-            self.correctAnswers = 0
-         
-            self.questionFactory?.requestNextQuestion()
-        }
-
-        alert.addAction(action)
-
-        self.present(alert, animated: true, completion: nil)
-    }
+//    private func show(quiz result: QuizResultViewModel) {
+//        
+//        let alert = UIAlertController(
+//            title: result.title,
+//            message: result.text,
+//            preferredStyle: .alert)
+//
+//        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+//            guard let self = self else { return }
+//            self.currentQuestionIndex = 0
+//            self.correctAnswers = 0
+//         
+//            self.questionFactory?.requestNextQuestion()
+//        }
+//
+//        alert.addAction(action)
+//        self.present(alert, animated: true, completion: nil)
+//    }
     
     // изменение цвета рамки
     private func showAnswerResult(isCorrect: Bool) {
@@ -122,14 +124,19 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            _ = correctAnswers == questionsAmount ?
+            let text = correctAnswers == questionsAmount ?
                         "Поздравляем, вы ответили на 10 из 10!" :
                         "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
-            show(quiz: QuizResultViewModel(
-                    title: "Раунд окончен",
-                    text: "Ваш результат \(correctAnswers)/10",
-                    buttonText: "Сыграть еще раз")
-            )
+            let alertModel = AlertModel(
+                        title: "Этот раунд окончен!",
+                        message: text,
+                        buttonText: "Сыграть ещё раз",
+                        completion: { [weak self] in
+                            self?.currentQuestionIndex = 0
+                            self?.correctAnswers = 0
+                            self?.questionFactory?.requestNextQuestion()
+                        })
+            alertPresenter?.show(quiz: alertModel)
     // идём в состояние "Результат квиза"
         } else {
             currentQuestionIndex += 1
@@ -144,6 +151,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         noButton.isEnabled = status
     }
 }
+extension MovieQuizViewController: AlertPresenterDelegate {
+    func show(quiz result: AlertModel) {
+        let alertModel = AlertModel(
+            title: result.title,
+            message: result.message,
+            buttonText: result.buttonText,
+            completion: { [weak self] in
+                self?.currentQuestionIndex = 0
+                self?.correctAnswers = 0
+                self?.questionFactory?.requestNextQuestion()
+            })
+        alertPresenter?.show(quiz: alertModel)
+    }
+}
+    
+
 /*
  Mock-данные
 
