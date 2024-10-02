@@ -1,8 +1,8 @@
 //  QuestionFactoryDelegate.swift
 //  MovieQuiz
 //
-//  Created by Надежда Пономарева on 30.09.2024.
-//
+//  Created by Надежда Пономарева on 02.10.2024.
+
 protocol QuestionFactoryDelegate: AnyObject {
     func didReceiveNextQuestion(question: QuizQuestion?)
 }
