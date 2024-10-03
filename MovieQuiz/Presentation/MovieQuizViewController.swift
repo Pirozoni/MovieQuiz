@@ -1,5 +1,6 @@
 import UIKit
 
+
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - IB Outlets
@@ -15,19 +16,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private var currentQuestionIndex = 0
     private let questionsAmount = 10
+    private var correctAnswers = 0
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
-    private var correctAnswers = 0
     private var alertPresenter: AlertPresenter?
+    private var statisticService: StatisticService?
     
     // MARK: - Overrides Methods
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        let statisticService = StatisticService()
+        self.statisticService = statisticService
+        
         let questionFactory = QuestionFactory()
         questionFactory.delegate = self
         self.questionFactory = questionFactory
-        
         questionFactory.requestNextQuestion()
         let alertPresenter = AlertPresenter(delegate: self)
         self.alertPresenter = alertPresenter
@@ -87,25 +91,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         counterLabel.text = step.questionNumber
     }
     
-//    private func show(quiz result: QuizResultViewModel) {
-//        
-//        let alert = UIAlertController(
-//            title: result.title,
-//            message: result.text,
-//            preferredStyle: .alert)
-//
-//        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-//            guard let self = self else { return }
-//            self.currentQuestionIndex = 0
-//            self.correctAnswers = 0
-//         
-//            self.questionFactory?.requestNextQuestion()
-//        }
-//
-//        alert.addAction(action)
-//        self.present(alert, animated: true, completion: nil)
-//    }
-    
     // изменение цвета рамки
     private func showAnswerResult(isCorrect: Bool) {
         if isCorrect  {
@@ -123,10 +108,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResults() {
+        guard let statisticService = statisticService else {
+            print("Error statisticService is nil")
+            return
+        }
         if currentQuestionIndex == questionsAmount - 1 {
+            statisticService.store(correct: correctAnswers, total: questionsAmount)
             let text = correctAnswers == questionsAmount ?
                         "Поздравляем, вы ответили на 10 из 10!" :
-                        "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
+            """
+            Ваш результат: \(correctAnswers)/10
+            Количество сыгранных квизов: \(statisticService.gamesCount)
+            Рекорд: \(statisticService.bestGame.correct)/10 (\(statisticService.bestGame.date.dateTimeString))
+            Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
+            """
             let alertModel = AlertModel(
                         title: "Этот раунд окончен!",
                         message: text,
