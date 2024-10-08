@@ -20,8 +20,8 @@ final class StatisticService: StatisticServiceProtocol {
             case correct,
                  gamesCount,
                  bestGame,
-                 bestGameCorrect, // прав ответы в лучшей игре
-                 bestGameTotal, //
+                 bestGameCorrect, // правильные ответы в лучшей игре
+                 bestGameTotal,
                  bestGameDate,
                  totalAccuracy
         }

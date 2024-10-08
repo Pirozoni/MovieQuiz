@@ -1,6 +1,5 @@
 import UIKit
 
-
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - IB Outlets
@@ -20,7 +19,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenter?
-    private var statisticService: StatisticService?
+    private var statisticService: StatisticServiceProtocol?
     
     // MARK: - Overrides Methods
     
@@ -47,7 +46,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
         currentQuestion = question
         let viewModel = convert(model: question)
-//        show(quiz: viewModel)
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
