@@ -29,9 +29,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let statisticService = StatisticService()
         self.statisticService = statisticService
         
-        let questionFactory = QuestionFactory()
+        let questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory.delegate = self
         showLoadingIndicator()
+        questionFactory.loadData() // убран опционал
         self.questionFactory = questionFactory
         questionFactory.requestNextQuestion()
         let alertPresenter = AlertPresenter(delegate: self)
@@ -51,6 +52,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
+    }
+    
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: any Error) {
+        showNetworkError(message: error.localizedDescription)
     }
     // MARK: - IB Actions
     
@@ -79,7 +89,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // метод конвертации, который принимает моковый вопрос и возвращает вью модель для экрана вопроса
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         return QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
