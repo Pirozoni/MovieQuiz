@@ -7,7 +7,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var counterLabel: UILabel!
     @IBOutlet private var textLabel: UILabel!
-    
+    @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private var noButton: UIButton!
     @IBOutlet private var yesButton: UIButton!
     
@@ -25,11 +25,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        activityIndicator.hidesWhenStopped = true
         let statisticService = StatisticService()
         self.statisticService = statisticService
         
         let questionFactory = QuestionFactory()
         questionFactory.delegate = self
+        showLoadingIndicator()
         self.questionFactory = questionFactory
         questionFactory.requestNextQuestion()
         let alertPresenter = AlertPresenter(delegate: self)
@@ -66,7 +68,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let currentQuestion = currentQuestion else {
             return
         }
-//        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
+        //        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
         let givenAnswer = true
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
         availableButtons(status: false)
@@ -81,7 +83,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
-
+    
     // вывод на экран вопроса, который принимает на вход вью модель вопроса и ничего не возвращает
     private func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
@@ -113,7 +115,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         if currentQuestionIndex == questionsAmount - 1 {
             statisticService.store(correct: correctAnswers, total: questionsAmount)
             let text = correctAnswers == questionsAmount ?
-                        "Поздравляем, вы ответили на 10 из 10!" :
+            "Поздравляем, вы ответили на 10 из 10!" :
             """
             Ваш результат: \(correctAnswers)/10
             Количество сыгранных квизов: \(statisticService.gamesCount)
@@ -121,16 +123,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
             """
             let alertModel = AlertModel(
-                        title: "Этот раунд окончен!",
-                        message: text,
-                        buttonText: "Сыграть ещё раз",
-                        completion: { [weak self] in
-                            self?.currentQuestionIndex = 0
-                            self?.correctAnswers = 0
-                            self?.questionFactory?.requestNextQuestion()
-                        })
+                title: "Этот раунд окончен!",
+                message: text,
+                buttonText: "Сыграть ещё раз",
+                completion: { [weak self] in
+                    self?.currentQuestionIndex = 0
+                    self?.correctAnswers = 0
+                    self?.questionFactory?.requestNextQuestion()
+                })
             alertPresenter?.show(quiz: alertModel)
-    // идём в состояние "Результат квиза"
+            // идём в состояние "Результат квиза"
         } else {
             currentQuestionIndex += 1
             self.questionFactory?.requestNextQuestion()
@@ -143,7 +145,29 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         yesButton.isEnabled = status
         noButton.isEnabled = status
     }
+    private func showLoadingIndicator() {
+        activityIndicator.startAnimating()
+    }
+    private func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+    }
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        
+        let model = AlertModel(
+            title: "Что-то пошло не так :(",
+            message: message,
+            buttonText: "Попробуйте еще раз"
+        ) { [weak self] in
+            guard let self = self else { return }
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            self.questionFactory?.requestNextQuestion()
+        }
+        alertPresenter?.show(quiz: model)
+    }
 }
+    
 extension MovieQuizViewController: AlertPresenterDelegate {
     func show(quiz result: AlertModel) {
         let alertModel = AlertModel(
@@ -158,8 +182,6 @@ extension MovieQuizViewController: AlertPresenterDelegate {
         alertPresenter?.show(quiz: alertModel)
     }
 }
-    
-
 /*
  Mock-данные
 
@@ -167,49 +189,5 @@ extension MovieQuizViewController: AlertPresenterDelegate {
  Настоящий рейтинг: 9,2
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: ДА
- 
- Картинка: The Dark Knight
- Настоящий рейтинг: 9
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- Картинка: Kill Bill
- Настоящий рейтинг: 8,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- Картинка: The Avengers
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- Картинка: Deadpool
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- Картинка: The Green Knight
- Настоящий рейтинг: 6,6
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- Картинка: Old
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- 
- Картинка: The Ice Age Adventures of Buck Wild
- Настоящий рейтинг: 4,3
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- 
- Картинка: Tesla
- Настоящий рейтинг: 5,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- 
- Картинка: Vivarium
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
+
 */
