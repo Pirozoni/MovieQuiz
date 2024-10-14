@@ -5,7 +5,7 @@
 //  Created by Надежда Пономарева on 02.10.2024.
 import UIKit
 
-class AlertPresenter {
+final class AlertPresenter {
     weak var delegate: UIViewController?
     init(delegate: MovieQuizViewController?) {
         self.delegate = delegate
@@ -21,7 +21,8 @@ class AlertPresenter {
             style: .default
         ) { _ in result.completion()
                 }
-                
+         
+        alert.view.accessibilityIdentifier = "Game results"
         alert.addAction(action)
         delegate?.present(alert, animated: true, completion: nil)
     }

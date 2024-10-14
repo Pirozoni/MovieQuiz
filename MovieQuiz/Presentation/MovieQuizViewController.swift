@@ -16,27 +16,25 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var currentQuestionIndex = 0
     private let questionsAmount = 10
     private var correctAnswers = 0
-    private var questionFactory: QuestionFactoryProtocol?
+//    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
-    private var alertPresenter: AlertPresenter?
-    private var statisticService: StatisticServiceProtocol?
+
+    private lazy var alertPresenter = AlertPresenter(delegate: self)
+    private lazy var statisticService: StatisticServiceProtocol = StatisticService()
+    private lazy var questionFactory: QuestionFactoryProtocol = QuestionFactory(
+        moviesLoader: MoviesLoader(),
+        delegate: self
+    )
     
     // MARK: - Overrides Methods
     
     override func viewDidLoad() {
         super.viewDidLoad()
         activityIndicator.hidesWhenStopped = true
-        let statisticService = StatisticService()
-        self.statisticService = statisticService
-        
-        let questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
-        questionFactory.delegate = self
+
         showLoadingIndicator()
         questionFactory.loadData() // убран опционал
-        self.questionFactory = questionFactory
         questionFactory.requestNextQuestion()
-        let alertPresenter = AlertPresenter(delegate: self)
-        self.alertPresenter = alertPresenter
         
         imageView.backgroundColor = .ypWhite
         imageView.layer.cornerRadius = 20
@@ -56,7 +54,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     func didLoadDataFromServer() {
         activityIndicator.isHidden = true
-        questionFactory?.requestNextQuestion()
+        questionFactory.requestNextQuestion()
     }
     
     func didFailToLoadData(with error: any Error) {
@@ -118,10 +116,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResults() {
-        guard let statisticService = statisticService else {
-            print("Error statisticService is nil")
-            return
-        }
         if currentQuestionIndex == questionsAmount - 1 {
             statisticService.store(correct: correctAnswers, total: questionsAmount)
             let text = correctAnswers == questionsAmount ?
@@ -139,17 +133,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 completion: { [weak self] in
                     self?.currentQuestionIndex = 0
                     self?.correctAnswers = 0
-                    self?.questionFactory?.requestNextQuestion()
+                    self?.questionFactory.requestNextQuestion()
                 })
-            alertPresenter?.show(quiz: alertModel)
-            // идём в состояние "Результат квиза"
-        } else {
-            currentQuestionIndex += 1
-            self.questionFactory?.requestNextQuestion()
+                alertPresenter.show(quiz: alertModel)
+                // идём в состояние "Результат квиза"
+            } else {
+                currentQuestionIndex += 1
+                self.questionFactory.requestNextQuestion()
+            }
+            imageView.layer.borderColor = UIColor.ypBlack.cgColor
+            availableButtons(status: true)
         }
-        imageView.layer.borderColor = UIColor.ypBlack.cgColor
-        availableButtons(status: true)
-    }
     
     private func availableButtons(status: Bool) {
         yesButton.isEnabled = status
@@ -172,9 +166,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self = self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
-            self.questionFactory?.requestNextQuestion()
+            self.questionFactory.requestNextQuestion()
         }
-        alertPresenter?.show(quiz: model)
+        alertPresenter.show(quiz: model)
     }
 }
     
@@ -187,17 +181,8 @@ extension MovieQuizViewController: AlertPresenterDelegate {
             completion: { [weak self] in
                 self?.currentQuestionIndex = 0
                 self?.correctAnswers = 0
-                self?.questionFactory?.requestNextQuestion()
+                self?.questionFactory.requestNextQuestion()
             })
-        alertPresenter?.show(quiz: alertModel)
+        alertPresenter.show(quiz: alertModel)
     }
 }
-/*
- Mock-данные
-
- Картинка: The Godfather
- Настоящий рейтинг: 9,2
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-*/
