@@ -15,10 +15,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private let presenter = MovieQuizPresenter()
     private var currentQuestionIndex = 0
+//    var currentQuestion: QuizQuestion?
 //    private var questionFactory: QuestionFactoryProtocol?
-    private var currentQuestion: QuizQuestion?
+//    private var currentQuestion: QuizQuestion?
     private var correctAnswers = 0
-
 
     private lazy var alertPresenter = AlertPresenter(delegate: self)
     private lazy var statisticService: StatisticServiceProtocol = StatisticService()
@@ -33,6 +33,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         super.viewDidLoad()
         activityIndicator.hidesWhenStopped = true
 
+        presenter.viewController = self
         showLoadingIndicator()
         questionFactory.loadData() // убран опционал
         questionFactory.requestNextQuestion()
@@ -46,7 +47,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let question = question else {
             return
         }
-        currentQuestion = question
+        presenter.currentQuestion = question // добавила presenter, чтобы не ругался
         let viewModel = presenter.convert(model: question)
 //        let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
@@ -65,20 +66,26 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - IB Actions
     
     @IBAction private func noButtonClicked(_ sender: Any) {
-        guard let currentQuestion = currentQuestion else {
+        guard let currentQuestion = presenter.currentQuestion else {
             return
         }
-        //        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
+        
+        presenter.currentQuestion = currentQuestion
+        presenter.noButtonClicked()
+        
         let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
         availableButtons(status: false)
     }
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
-        guard let currentQuestion = currentQuestion else {
+        guard let currentQuestion = presenter.currentQuestion else {
             return
         }
-        //        guard let currentQuestion = questions[safe: currentQuestionIndex] else { return } // 4 спринт
+        
+        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonClicked()
+        
         let givenAnswer = true
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
         availableButtons(status: false)
@@ -94,7 +101,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     // изменение цвета рамки
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         if isCorrect  {
             correctAnswers += 1
         }
@@ -140,7 +147,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             availableButtons(status: true)
         }
     
-    private func availableButtons(status: Bool) {
+    func availableButtons(status: Bool) { //убрала приватность для presenter
         yesButton.isEnabled = status
         noButton.isEnabled = status
     }
