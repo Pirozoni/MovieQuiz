@@ -15,21 +15,16 @@ protocol MovieQuizPresenterProtocol {
     
 }
 
-final class MovieQuizPresenter {
-    let questionsAmount: Int = 10
+final class MovieQuizPresenter: MovieQuizPresenterProtocol {
+    weak var view: MovieQuizViewProtocol?
+    
+    private let questionsAmount: Int = 10
     private var currentQuestionIndex: Int = 0
-    var currentQuestion: QuizQuestion?
-//    weak var viewController: MovieQuizViewController?
     private var correctAnswers = 0
-//    private lazy var alertPresenter = AlertPresenter(delegate: self)
-    private var statisticService: StatisticServiceProtocol = StatisticService()
+    private var currentQuestion: QuizQuestion?
+    private var statisticService = StatisticService()
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenter?
-//    = QuestionFactory
-//        moviesLoader: MoviesLoader(),
-//        delegate: self
-//    )
-    weak var view: MovieQuizViewProtocol?
     
     func yesButtonClicked() {
         didAnswer(isYes: true)
@@ -42,12 +37,10 @@ final class MovieQuizPresenter {
     private func didAnswer(isYes: Bool) {
         guard let currentQuestion else {
             return
-        }
+    }
         let givenAnswer = isYes
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-//        availableButtons(status: false)
     }
-    
     
     func showNextQuestionOrResults() {
         if self.isLastQuestion() {
@@ -55,7 +48,7 @@ final class MovieQuizPresenter {
             let text = correctAnswers == self.questionsAmount ?
             "Поздравляем, вы ответили на 10 из 10!" :
             """
-            Ваш результат: \(correctAnswers)\\\(self.questionsAmount)/10
+            Ваш результат: \(correctAnswers)/10
             Количество сыгранных квизов: \(statisticService.gamesCount)
             Рекорд: \(statisticService.bestGame.correct)/10 (\(statisticService.bestGame.date.dateTimeString))
             Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
@@ -72,7 +65,6 @@ final class MovieQuizPresenter {
                 alertPresenter?.show(quiz: alertModel)
                 // идём в состояние "Результат квиза"
             } else {
-//                currentQuestionIndex += 1
                 self.switchToNextQuestion()
                 self.questionFactory?.requestNextQuestion()
             }
@@ -148,7 +140,6 @@ extension MovieQuizPresenter: QuestionFactoryDelegate {
     
     func didLoadDataFromServer() {
         view?.hideLoadingIndicator()
-//        activityIndicator.isHidden = true
         questionFactory?.requestNextQuestion()
     }
     
@@ -156,22 +147,18 @@ extension MovieQuizPresenter: QuestionFactoryDelegate {
         
         view?.hideLoadingIndicator()
             
-//            self.presenter.resetQuestionIndex()
-//            self.correctAnswers = 0
-            
         let model = AlertModel(
             title: "Что-то пошло не так :(",
             message: error.localizedDescription,
             buttonText: "Попробуйте еще раз"
         ) { [weak self] in
-//            guard let self = self else { return }
+
             self?.currentQuestionIndex = 0
             self?.resetQuestionIndex()
             self?.questionFactory?.requestNextQuestion()
         }
         alertPresenter?.show(quiz: model)
     }
-    
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question else {
@@ -184,5 +171,3 @@ extension MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
 }
-
-
