@@ -33,6 +33,7 @@
 		C3BF84552CB854A0001B1CD2 /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BF84542CB8549D001B1CD2 /* NetworkClient.swift */; };
 		C3BF84572CB8594E001B1CD2 /* MostPopularMovies.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BF84562CB8594B001B1CD2 /* MostPopularMovies.swift */; };
 		C3BF84592CB85C6A001B1CD2 /* MoviesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BF84582CB85C67001B1CD2 /* MoviesLoader.swift */; };
+		C3D7F9C62CC026C100C1CEEA /* MovieQuizPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D7F9C52CC0269700C1CEEA /* MovieQuizPresenter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,6 +84,7 @@
 		C3BF84542CB8549D001B1CD2 /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
 		C3BF84562CB8594B001B1CD2 /* MostPopularMovies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MostPopularMovies.swift; sourceTree = "<group>"; };
 		C3BF84582CB85C67001B1CD2 /* MoviesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesLoader.swift; sourceTree = "<group>"; };
+		C3D7F9C52CC0269700C1CEEA /* MovieQuizPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieQuizPresenter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -131,6 +133,7 @@
 		8F4738322848DE2A005DF65E /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				C3D7F9C52CC0269700C1CEEA /* MovieQuizPresenter.swift */,
 				C30E68CA2CAD88F400E2347B /* AlertPresenterDelegate.swift */,
 				C30E68C62CAD86F400E2347B /* AlertPresenter.swift */,
 				AD1ABAB52831907B00B3E448 /* MovieQuizViewController.swift */,
@@ -361,6 +364,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3D7F9C62CC026C100C1CEEA /* MovieQuizPresenter.swift in Sources */,
 				C3BF84552CB854A0001B1CD2 /* NetworkClient.swift in Sources */,
 				AD5EE5DE284D7887003966EF /* UIColor+Extensions.swift in Sources */,
 				C30E68C72CAD86F700E2347B /* AlertPresenter.swift in Sources */,

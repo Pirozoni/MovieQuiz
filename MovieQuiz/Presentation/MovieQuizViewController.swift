@@ -13,11 +13,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Private Properties
     
+    private let presenter = MovieQuizPresenter()
     private var currentQuestionIndex = 0
-    private let questionsAmount = 10
-    private var correctAnswers = 0
 //    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
+    private var correctAnswers = 0
+
 
     private lazy var alertPresenter = AlertPresenter(delegate: self)
     private lazy var statisticService: StatisticServiceProtocol = StatisticService()
@@ -46,7 +47,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             return
         }
         currentQuestion = question
-        let viewModel = convert(model: question)
+        let viewModel = presenter.convert(model: question)
+//        let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
@@ -84,14 +86,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Private Methods
     
-    // метод конвертации, который принимает моковый вопрос и возвращает вью модель для экрана вопроса
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        return QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-    }
-    
     // вывод на экран вопроса, который принимает на вход вью модель вопроса и ничего не возвращает
     private func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
@@ -116,12 +110,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResults() {
-        if currentQuestionIndex == questionsAmount - 1 {
-            statisticService.store(correct: correctAnswers, total: questionsAmount)
-            let text = correctAnswers == questionsAmount ?
+        if presenter.isLastQuestion() /*== presenter.questionsAmount - 1*/ {
+            statisticService.store(correct: correctAnswers, total: presenter.questionsAmount)
+            let text = correctAnswers == presenter.questionsAmount ?
             "Поздравляем, вы ответили на 10 из 10!" :
             """
-            Ваш результат: \(correctAnswers)/10
+            Ваш результат: \(correctAnswers)\\\(presenter.questionsAmount)/10
             Количество сыгранных квизов: \(statisticService.gamesCount)
             Рекорд: \(statisticService.bestGame.correct)/10 (\(statisticService.bestGame.date.dateTimeString))
             Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
@@ -138,7 +132,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 alertPresenter.show(quiz: alertModel)
                 // идём в состояние "Результат квиза"
             } else {
-                currentQuestionIndex += 1
+//                currentQuestionIndex += 1
+                presenter.switchToNextQuestion()
                 self.questionFactory.requestNextQuestion()
             }
             imageView.layer.borderColor = UIColor.ypBlack.cgColor
@@ -158,6 +153,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func showNetworkError(message: String) {
         hideLoadingIndicator()
         
+        self.presenter.resetQuestionIndex()
+        self.correctAnswers = 0
+        
         let model = AlertModel(
             title: "Что-то пошло не так :(",
             message: message,
@@ -165,7 +163,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         ) { [weak self] in
             guard let self = self else { return }
             self.currentQuestionIndex = 0
-            self.correctAnswers = 0
+            self.presenter.resetQuestionIndex()
             self.questionFactory.requestNextQuestion()
         }
         alertPresenter.show(quiz: model)
