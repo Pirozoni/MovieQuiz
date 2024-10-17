@@ -7,7 +7,8 @@ import UIKit
 
 final class AlertPresenter {
     weak var delegate: UIViewController?
-    init(delegate: MovieQuizViewController?) {
+//    init(delegate: MovieQuizViewController?) {
+    init(delegate: UIViewController?) {
         self.delegate = delegate
     }
     func show(quiz result: AlertModel) {
